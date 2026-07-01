@@ -14,7 +14,7 @@ import { Vehicles } from './pages/Vehicles';
 
 function Protected({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="p-8 font-label text-muted">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-background p-8 font-label text-xs text-muted">BOOTING...</div>;
   if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
