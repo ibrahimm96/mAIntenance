@@ -8,7 +8,6 @@ services:
   - type: web
     name: maintenance-api
     runtime: python
-    plan: free
     rootDir: server
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT
@@ -27,7 +26,6 @@ services:
   - type: web
     name: maintenance-client
     runtime: static
-    plan: free
     rootDir: client
     buildCommand: npm install && npm run build
     staticPublishPath: dist
