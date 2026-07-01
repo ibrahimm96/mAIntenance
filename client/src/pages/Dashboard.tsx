@@ -3,17 +3,50 @@ import { Link } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { api } from '../api/client';
 import { Badge, Card, Ledger, LedgerCell } from '../components/Layout';
-import { Forecast, Vehicle } from '../types';
+import { Forecast, ServiceRecord, Vehicle } from '../types';
+
+type FleetCostHistoryMonth = {
+  month: string;
+  label: string;
+  total_cost: number;
+  services: string[];
+};
+
+function buildFleetCostHistory(recordsByVehicle: Array<{ vehicle: Vehicle; services: ServiceRecord[] }>): FleetCostHistoryMonth[] {
+  const buckets = new Map<string, FleetCostHistoryMonth>();
+
+  recordsByVehicle.forEach(({ vehicle, services }) => {
+    services.forEach((service) => {
+      const date = new Date(`${service.service_date}T00:00:00`);
+      const month = service.service_date.slice(0, 7);
+      const label = date.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+      const existing = buckets.get(month) || { month, label, total_cost: 0, services: [] };
+      existing.total_cost += Number(service.cost || 0);
+      existing.services.push(`${vehicle.nickname || `${vehicle.year} ${vehicle.make} ${vehicle.model}`}: ${service.service_type}`);
+      buckets.set(month, existing);
+    });
+  });
+
+  return Array.from(buckets.values()).sort((a, b) => a.month.localeCompare(b.month));
+}
 
 export function Dashboard() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [forecast, setForecast] = useState<Forecast | null>(null);
+  const [costHistory, setCostHistory] = useState<FleetCostHistoryMonth[]>([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
     api<{ vehicles: Vehicle[] }>('/vehicles')
       .then(async (data) => {
         setVehicles(data.vehicles);
+        const serviceGroups = await Promise.all(
+          data.vehicles.map(async (vehicle) => {
+            const serviceData = await api<{ services: ServiceRecord[] }>(`/vehicles/${vehicle.id}/services`);
+            return { vehicle, services: serviceData.services };
+          })
+        );
+        setCostHistory(buildFleetCostHistory(serviceGroups));
         if (data.vehicles[0]) {
           const firstForecast = await api<Forecast>(`/vehicles/${data.vehicles[0].id}/forecast`);
           setForecast(firstForecast);
@@ -53,17 +86,28 @@ export function Dashboard() {
       </Ledger>
 
       <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-        <Card title="COST_TIMELINE // 12MO">
+        <Card title="FLEET_COST_HISTORY">
           <div className="h-72">
-            <ResponsiveContainer>
-              <BarChart data={forecast?.timeline || []}>
-                <CartesianGrid strokeDasharray="2 4" stroke="#2a2d28" />
-                <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#7d8177' }} axisLine={{ stroke: '#2a2d28' }} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: '#7d8177' }} axisLine={{ stroke: '#2a2d28' }} tickLine={false} />
-                <Tooltip contentStyle={{ background: '#141714', border: '1px solid #2a2d28', borderRadius: 0, fontSize: 12 }} />
-                <Bar dataKey="max_cost" fill="#ff6a1f" radius={0} />
-              </BarChart>
-            </ResponsiveContainer>
+            {costHistory.length ? (
+              <ResponsiveContainer>
+                <BarChart data={costHistory}>
+                  <CartesianGrid strokeDasharray="2 4" stroke="#2a2d28" />
+                  <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#7d8177' }} axisLine={{ stroke: '#2a2d28' }} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: '#7d8177' }} axisLine={{ stroke: '#2a2d28' }} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{ background: '#141714', border: '1px solid #2a2d28', borderRadius: 0, fontSize: 12 }}
+                    formatter={(value) => [`$${Number(value).toFixed(2)}`, 'Fleet cost']}
+                    labelFormatter={(label, payload) => {
+                      const item = payload?.[0]?.payload as FleetCostHistoryMonth | undefined;
+                      return item ? `${label}: ${item.services.join(', ')}` : label;
+                    }}
+                  />
+                  <Bar dataKey="total_cost" fill="#ff6a1f" radius={0} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm text-muted">Add service records to build fleet cost history.</div>
+            )}
           </div>
         </Card>
         <Card title="GARAGE_INDEX">
