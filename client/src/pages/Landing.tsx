@@ -14,7 +14,7 @@ export function Landing() {
       <section className="mx-auto grid max-w-[1280px] gap-8 px-4 py-10 md:grid-cols-[1fr_1.1fr] md:px-12">
         <div className="flex flex-col justify-center">
           <h1 className="font-display text-5xl font-bold leading-tight text-ink">mAIntenance</h1>
-          <p className="mt-4 font-display text-3xl font-semibold text-primary">See what&apos;s due before it becomes overdue.</p>
+          <p className="mt-4 font-display text-3xl font-semibold text-primary-bright">See what&apos;s due before it becomes overdue.</p>
           <p className="mt-5 max-w-xl text-lg text-muted">Track vehicles, maintenance history, upcoming service, cost exposure, and AI-powered vehicle-specific recommendations in one focused dashboard.</p>
           <div className="mt-8 flex gap-3">
             <Link className="rounded-xl bg-primary px-5 py-3 font-label font-semibold text-white" to="/register">Start tracking</Link>

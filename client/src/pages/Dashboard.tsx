@@ -88,7 +88,7 @@ function Stat({ label, value, status }: { label: string; value: string; status?:
   return (
     <Card>
       <div className="font-label text-xs font-bold uppercase tracking-wider text-muted">{label}</div>
-      <div className="mt-3 font-display text-2xl font-semibold text-primary">{value}</div>
+      <div className="mt-3 font-display text-2xl font-semibold text-primary-bright">{value}</div>
       {status && <div className="mt-4"><Badge status={status}>{status}</Badge></div>}
     </Card>
   );
