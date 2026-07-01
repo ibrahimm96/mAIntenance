@@ -1,6 +1,6 @@
 import json
 import os
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, current_app, jsonify, request
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from openai import OpenAI
 from . import bcrypt, db
@@ -313,9 +313,14 @@ def generate_recommendations(vehicle_id):
     try:
         result = call_ai(vehicle, services)
     except RuntimeError as exc:
+        current_app.logger.warning("AI recommendation configuration error: %s", exc)
         return error(str(exc), 503)
+    except json.JSONDecodeError:
+        current_app.logger.exception("AI recommendation response was not valid JSON")
+        return error("AI response was not valid JSON", 502)
     except Exception:
-        return error("AI recommendation generation failed", 503)
+        current_app.logger.exception("AI recommendation generation failed")
+        return error("AI recommendation generation failed. Check backend OpenAI configuration, model access, and billing.", 503)
 
     items = result.get("items")
     if not isinstance(items, list) or not items:
