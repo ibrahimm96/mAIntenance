@@ -22,6 +22,8 @@ services:
         sync: false
       - key: OPENAI_MODEL
         value: gpt-4o-mini
+      - key: PYTHON_VERSION
+        value: 3.11.9
 
   - type: web
     name: maintenance-client
