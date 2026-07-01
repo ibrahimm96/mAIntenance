@@ -2,7 +2,7 @@ import json
 import os
 from flask import Blueprint, current_app, jsonify, request
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
-from openai import OpenAI
+from openai import APIConnectionError, AuthenticationError, BadRequestError, OpenAI, PermissionDeniedError, RateLimitError
 from . import bcrypt, db
 from .forecast import build_forecast
 from .models import AIRecommendationItem, AIRecommendationSet, ServiceRecord, User, Vehicle
@@ -315,6 +315,21 @@ def generate_recommendations(vehicle_id):
     except RuntimeError as exc:
         current_app.logger.warning("AI recommendation configuration error: %s", exc)
         return error(str(exc), 503)
+    except AuthenticationError:
+        current_app.logger.exception("OpenAI authentication failed")
+        return error("OpenAI authentication failed. Check that OPENAI_API_KEY is a valid project API key.", 503)
+    except PermissionDeniedError:
+        current_app.logger.exception("OpenAI permission denied")
+        return error("OpenAI permission denied. Check project access, model access, and organization billing.", 503)
+    except RateLimitError:
+        current_app.logger.exception("OpenAI rate limit or quota error")
+        return error("OpenAI rate limit or quota error. Check project billing, credits, and usage limits.", 503)
+    except BadRequestError:
+        current_app.logger.exception("OpenAI rejected the recommendation request")
+        return error("OpenAI rejected the request. Check OPENAI_MODEL and model availability.", 503)
+    except APIConnectionError:
+        current_app.logger.exception("Could not connect to OpenAI")
+        return error("Could not connect to OpenAI from the backend service. Try again or check provider connectivity.", 503)
     except json.JSONDecodeError:
         current_app.logger.exception("AI recommendation response was not valid JSON")
         return error("AI response was not valid JSON", 502)
