@@ -23,11 +23,10 @@ export type ServiceRecord = {
 
 export type ForecastItem = {
   id?: number;
-  source: 'rule' | 'ai';
+  source: 'rule';
   service_type: string;
   display_name: string;
   status: string;
-  approval_status?: string;
   due_date?: string;
   due_mileage?: number;
   estimated_min_cost: number;
@@ -47,34 +46,10 @@ export type TimelineMonth = {
 export type Forecast = {
   vehicle: Vehicle;
   items: ForecastItem[];
-  ai_items: ForecastItem[];
   timeline: TimelineMonth[];
   next_service: ForecastItem | null;
   overdue_count: number;
   twelve_month_min: number;
   twelve_month_max: number;
   most_expensive_month: TimelineMonth | null;
-};
-
-export type RecommendationItem = {
-  id: number;
-  title: string;
-  category: string;
-  service_type: string;
-  rationale: string;
-  symptoms?: string;
-  mechanic_questions?: string;
-  due_mileage?: number;
-  due_month_offset: number;
-  estimated_min_cost: number;
-  estimated_max_cost: number;
-  status: 'pending' | 'approved' | 'rejected';
-};
-
-export type RecommendationSet = {
-  id: number;
-  summary: string;
-  disclaimer: string;
-  items: RecommendationItem[];
-  updated_at: string;
 };

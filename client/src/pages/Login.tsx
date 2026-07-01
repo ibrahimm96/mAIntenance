@@ -27,7 +27,7 @@ function AuthCard({ title, subtitle, submit, error, mode }: { title: string; sub
     <main className="flex min-h-screen items-center justify-center bg-background p-4">
       <form onSubmit={submit} className="card w-full max-w-sm">
         <div className="panel-head">
-          <span><span className="dot" />mAIntenance // {title}</span>
+          <span><span className="dot" />Maintenance Tracker // {title}</span>
         </div>
         <div className="p-6">
           <p className="mb-5 font-label text-xs text-muted">{subtitle}</p>

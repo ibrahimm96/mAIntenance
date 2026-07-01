@@ -28,7 +28,6 @@ class Vehicle(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     services = db.relationship("ServiceRecord", backref="vehicle", cascade="all, delete-orphan")
-    recommendation_set = db.relationship("AIRecommendationSet", backref="vehicle", cascade="all, delete-orphan", uselist=False)
 
     def label(self):
         return self.nickname or f"{self.year} {self.make} {self.model}"
@@ -93,58 +92,4 @@ class MaintenanceRule(db.Model):
             "estimated_min_cost": self.estimated_min_cost,
             "estimated_max_cost": self.estimated_max_cost,
             "description": self.description,
-        }
-
-
-class AIRecommendationSet(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    vehicle_id = db.Column(db.Integer, db.ForeignKey("vehicle.id"), nullable=False, unique=True)
-    summary = db.Column(db.Text, nullable=False)
-    disclaimer = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-    items = db.relationship("AIRecommendationItem", backref="recommendation_set", cascade="all, delete-orphan")
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "vehicle_id": self.vehicle_id,
-            "summary": self.summary,
-            "disclaimer": self.disclaimer,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat(),
-            "items": [item.to_dict() for item in self.items],
-        }
-
-
-class AIRecommendationItem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    recommendation_set_id = db.Column(db.Integer, db.ForeignKey("ai_recommendation_set.id"), nullable=False)
-    title = db.Column(db.String(160), nullable=False)
-    category = db.Column(db.String(80), nullable=False)
-    service_type = db.Column(db.String(80), nullable=False, default="Custom service")
-    rationale = db.Column(db.Text, nullable=False)
-    symptoms = db.Column(db.Text)
-    mechanic_questions = db.Column(db.Text)
-    due_mileage = db.Column(db.Integer)
-    due_month_offset = db.Column(db.Integer, nullable=False, default=0)
-    estimated_min_cost = db.Column(db.Float, nullable=False)
-    estimated_max_cost = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(20), nullable=False, default="pending")
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "recommendation_set_id": self.recommendation_set_id,
-            "title": self.title,
-            "category": self.category,
-            "service_type": self.service_type,
-            "rationale": self.rationale,
-            "symptoms": self.symptoms,
-            "mechanic_questions": self.mechanic_questions,
-            "due_mileage": self.due_mileage,
-            "due_month_offset": self.due_month_offset,
-            "estimated_min_cost": self.estimated_min_cost,
-            "estimated_max_cost": self.estimated_max_cost,
-            "status": self.status,
         }

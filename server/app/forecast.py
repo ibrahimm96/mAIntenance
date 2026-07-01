@@ -1,6 +1,6 @@
 from calendar import monthrange
 from datetime import date
-from .models import AIRecommendationSet, MaintenanceRule, ServiceRecord
+from .models import MaintenanceRule, ServiceRecord
 
 
 def add_months(start, months):
@@ -77,29 +77,6 @@ def build_forecast(vehicle, today=None):
             }
         )
 
-    recommendation_set = AIRecommendationSet.query.filter_by(vehicle_id=vehicle.id).first()
-    ai_items = []
-    if recommendation_set:
-        completed_types = {record.service_type for record in services}
-        for item in recommendation_set.items:
-            fulfilled = item.service_type in completed_types
-            due_date = add_months(today, item.due_month_offset)
-            ai_items.append(
-                {
-                    "source": "ai",
-                    "id": item.id,
-                    "service_type": item.service_type,
-                    "display_name": item.title,
-                    "status": "Completed" if fulfilled else status_for(due_date, today),
-                    "approval_status": item.status,
-                    "due_mileage": item.due_mileage,
-                    "due_date": due_date.isoformat(),
-                    "estimated_min_cost": item.estimated_min_cost,
-                    "estimated_max_cost": item.estimated_max_cost,
-                    "message": item.rationale,
-                }
-            )
-
     timeline = []
     for offset in range(12):
         current_month = add_months(today.replace(day=1), offset)
@@ -114,8 +91,7 @@ def build_forecast(vehicle, today=None):
             }
         )
 
-    merged_items = service_items + [item for item in ai_items if item["approval_status"] == "approved" and item["status"] != "Completed"]
-    for item in merged_items:
+    for item in service_items:
         due_date_text = item.get("due_date")
         if not due_date_text:
             continue
@@ -127,16 +103,15 @@ def build_forecast(vehicle, today=None):
             bucket["max_cost"] += item["estimated_max_cost"]
 
     most_expensive = max(timeline, key=lambda month: month["max_cost"]) if timeline else None
-    due_items = [item for item in merged_items if item.get("due_date")]
+    due_items = [item for item in service_items if item.get("due_date")]
     next_service = min(due_items, key=lambda item: item["due_date"], default=None)
 
     return {
         "vehicle": vehicle.to_dict(),
         "items": service_items,
-        "ai_items": ai_items,
         "timeline": timeline,
         "next_service": next_service,
-        "overdue_count": len([item for item in merged_items if item.get("status") == "Overdue"]),
+        "overdue_count": len([item for item in service_items if item.get("status") == "Overdue"]),
         "twelve_month_min": sum(month["min_cost"] for month in timeline),
         "twelve_month_max": sum(month["max_cost"] for month in timeline),
         "most_expensive_month": most_expensive,

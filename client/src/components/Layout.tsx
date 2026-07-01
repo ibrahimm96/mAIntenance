@@ -16,7 +16,7 @@ export function AppShell() {
       <header className="sticky top-0 z-40 flex h-12 items-center gap-4 border-b border-line bg-surface px-3 md:px-4">
         <Link to="/dashboard" className="flex items-center gap-2 pr-4">
           <span className="inline-block h-2 w-2 bg-primary-bright" />
-          <span className="font-label text-sm font-bold tracking-tight text-ink">mAIntenance</span>
+          <span className="font-label text-sm font-bold tracking-tight text-ink">Maintenance Tracker</span>
         </Link>
         <nav className="hidden items-stretch gap-0 border-l border-line md:flex">
           {nav.map((item) => {

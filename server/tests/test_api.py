@@ -59,15 +59,6 @@ def test_vehicle_service_and_forecast_flow(client):
     assert oil["due_mileage"] == 85500
 
 
-def test_ai_requires_configuration(client, monkeypatch):
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    headers = auth_headers(client)
-    vehicle = create_vehicle(client, headers)
-    response = client.post(f"/api/vehicles/{vehicle['id']}/recommendations/generate", headers=headers)
-    assert response.status_code == 503
-    assert "AI API key" in response.get_json()["error"]
-
-
 def test_ownership_is_enforced(client):
     headers = auth_headers(client)
     vehicle = create_vehicle(client, headers)

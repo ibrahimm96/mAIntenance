@@ -1,17 +1,12 @@
-import json
-import os
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
-from openai import APIConnectionError, AuthenticationError, BadRequestError, OpenAI, PermissionDeniedError, RateLimitError
 from . import bcrypt, db
 from .forecast import build_forecast
-from .models import AIRecommendationItem, AIRecommendationSet, ServiceRecord, User, Vehicle
+from .models import ServiceRecord, User, Vehicle
 from .seed import seed_demo_data
 from .validation import SERVICE_TYPES, parse_date, parse_float, parse_int, require_text
 
 api_bp = Blueprint("api", __name__)
-
-AI_DISCLAIMER = "AI recommendations are educational and may be inaccurate. They are not a confirmed diagnosis."
 
 
 def error(message, status=400):
@@ -243,143 +238,3 @@ def forecast(vehicle_id):
     if failure:
         return failure
     return jsonify(build_forecast(vehicle))
-
-
-@api_bp.get("/vehicles/<int:vehicle_id>/recommendations")
-@jwt_required()
-def get_recommendations(vehicle_id):
-    vehicle, failure = owned_vehicle(vehicle_id)
-    if failure:
-        return failure
-    recommendation_set = AIRecommendationSet.query.filter_by(vehicle_id=vehicle.id).first()
-    return jsonify({"recommendations": recommendation_set.to_dict() if recommendation_set else None})
-
-
-def fallback_recommendations(vehicle):
-    return {
-        "summary": f"Review known age and mileage concerns for this {vehicle.year} {vehicle.make} {vehicle.model}.",
-        "items": [
-            {
-                "title": "Inspect model-specific wear items",
-                "category": "Known issues + prevention",
-                "service_type": "Custom service",
-                "rationale": "Ask a qualified mechanic to review common issues for this exact trim and engine at the current mileage before approving larger repairs.",
-                "symptoms": "New noises, warning lights, fluid leaks, rough idle, vibration, or drivability changes.",
-                "mechanic_questions": "Are there service bulletins or known pattern failures for this year, engine, and mileage?",
-                "due_mileage": vehicle.current_mileage + 3000,
-                "due_month_offset": 3,
-                "estimated_min_cost": 100,
-                "estimated_max_cost": 250,
-            }
-        ],
-    }
-
-
-def call_ai(vehicle, services):
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise RuntimeError("AI API key is not configured")
-    client = OpenAI(api_key=api_key, base_url=os.getenv("OPENAI_BASE_URL") or None)
-    model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-    service_history = [service.to_dict() for service in services[:15]]
-    prompt = {
-        "vehicle": vehicle.to_dict(),
-        "service_history": service_history,
-        "instructions": (
-            "Return JSON only. Recommend 2-5 vehicle-specific maintenance or inspection items that go beyond routine oil and tires. "
-            "Include possible known concerns by mileage, but never diagnose or guarantee failure. Each item needs title, category, "
-            "service_type, rationale, symptoms, mechanic_questions, due_mileage, due_month_offset, estimated_min_cost, estimated_max_cost."
-        ),
-    }
-    response = client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": "You are a cautious vehicle maintenance educator. Output valid compact JSON only."},
-            {"role": "user", "content": json.dumps(prompt)},
-        ],
-        temperature=0.2,
-        response_format={"type": "json_object"},
-    )
-    return json.loads(response.choices[0].message.content)
-
-
-@api_bp.post("/vehicles/<int:vehicle_id>/recommendations/generate")
-@jwt_required()
-def generate_recommendations(vehicle_id):
-    vehicle, failure = owned_vehicle(vehicle_id)
-    if failure:
-        return failure
-    services = ServiceRecord.query.filter_by(vehicle_id=vehicle.id).order_by(ServiceRecord.service_date.desc()).all()
-    try:
-        result = call_ai(vehicle, services)
-    except RuntimeError as exc:
-        current_app.logger.warning("AI recommendation configuration error: %s", exc)
-        return error(str(exc), 503)
-    except AuthenticationError:
-        current_app.logger.exception("OpenAI authentication failed")
-        return error("OpenAI authentication failed. Check that OPENAI_API_KEY is a valid project API key.", 503)
-    except PermissionDeniedError:
-        current_app.logger.exception("OpenAI permission denied")
-        return error("OpenAI permission denied. Check project access, model access, and organization billing.", 503)
-    except RateLimitError:
-        current_app.logger.exception("OpenAI rate limit or quota error")
-        return error("OpenAI rate limit or quota error. Check project billing, credits, and usage limits.", 503)
-    except BadRequestError:
-        current_app.logger.exception("OpenAI rejected the recommendation request")
-        return error("OpenAI rejected the request. Check OPENAI_MODEL and model availability.", 503)
-    except APIConnectionError:
-        current_app.logger.exception("Could not connect to OpenAI")
-        return error("Could not connect to OpenAI from the backend service. Try again or check provider connectivity.", 503)
-    except json.JSONDecodeError:
-        current_app.logger.exception("AI recommendation response was not valid JSON")
-        return error("AI response was not valid JSON", 502)
-    except Exception:
-        current_app.logger.exception("AI recommendation generation failed")
-        return error("AI recommendation generation failed. Check backend OpenAI configuration, model access, and billing.", 503)
-
-    items = result.get("items")
-    if not isinstance(items, list) or not items:
-        return error("AI response did not include valid recommendations", 502)
-
-    existing = AIRecommendationSet.query.filter_by(vehicle_id=vehicle.id).first()
-    if existing:
-        db.session.delete(existing)
-        db.session.flush()
-    recommendation_set = AIRecommendationSet(vehicle_id=vehicle.id, summary=result.get("summary") or "Vehicle-specific recommendations.", disclaimer=AI_DISCLAIMER)
-    db.session.add(recommendation_set)
-    db.session.flush()
-    for item in items[:5]:
-        try:
-            recommendation_set.items.append(
-                AIRecommendationItem(
-                    title=str(item["title"])[:160],
-                    category=str(item.get("category") or "Known issues + prevention")[:80],
-                    service_type=str(item.get("service_type") or "Custom service")[:80],
-                    rationale=str(item["rationale"]),
-                    symptoms=str(item.get("symptoms") or ""),
-                    mechanic_questions=str(item.get("mechanic_questions") or ""),
-                    due_mileage=parse_int(item.get("due_mileage"), "due_mileage", required=False),
-                    due_month_offset=parse_int(item.get("due_month_offset"), "due_month_offset", required=True),
-                    estimated_min_cost=parse_float(item.get("estimated_min_cost"), "estimated_min_cost"),
-                    estimated_max_cost=parse_float(item.get("estimated_max_cost"), "estimated_max_cost"),
-                )
-            )
-        except (KeyError, ValueError):
-            db.session.rollback()
-            return error("AI response included an invalid recommendation item", 502)
-    db.session.commit()
-    return jsonify({"recommendations": recommendation_set.to_dict()})
-
-
-@api_bp.patch("/recommendation-items/<int:item_id>")
-@jwt_required()
-def update_recommendation_item(item_id):
-    item = AIRecommendationItem.query.get(item_id)
-    if not item or item.recommendation_set.vehicle.user_id != int(get_jwt_identity()):
-        return error("Recommendation item not found", 404)
-    status = (request.get_json() or {}).get("status")
-    if status not in {"pending", "approved", "rejected"}:
-        return error("Invalid recommendation status")
-    item.status = status
-    db.session.commit()
-    return jsonify({"item": item.to_dict()})
