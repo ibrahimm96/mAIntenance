@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { NavLink, useParams } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { api } from '../api/client';
-import { Badge, Card } from '../components/Layout';
+import { Badge, Card, Tile } from '../components/Layout';
 import { Forecast, RecommendationSet, Vehicle } from '../types';
 
 export function VehicleDetail() {
@@ -61,11 +61,11 @@ export function VehicleDetail() {
       </div>
       <VehicleTabs vehicleId={vehicle.id} />
 
-      <div className="grid gap-6 md:grid-cols-4">
-        <Summary label="Next Service" value={forecast.next_service?.display_name || 'Needs history'} status={forecast.next_service?.status} />
-        <Summary label="Current Mileage" value={vehicle.current_mileage.toLocaleString()} />
-        <Summary label="Overdue Count" value={String(forecast.overdue_count)} status={forecast.overdue_count ? 'Overdue' : 'Completed'} />
-        <Summary label="12-Month Cost" value={`$${forecast.twelve_month_min} - $${forecast.twelve_month_max}`} />
+      <div className="grid gap-px overflow-hidden border border-line bg-line md:grid-cols-5">
+        <Tile wide label="Next Service" value={forecast.next_service?.display_name || 'Needs history'} status={forecast.next_service?.status} />
+        <Tile label="Current Mileage" value={vehicle.current_mileage.toLocaleString()} />
+        <Tile label="Overdue Count" value={String(forecast.overdue_count)} status={forecast.overdue_count ? 'Overdue' : 'Completed'} />
+        <Tile label="12-Month Cost" value={`$${forecast.twelve_month_min}-${forecast.twelve_month_max}`} />
       </div>
 
       <div className="grid gap-6">
@@ -150,15 +150,5 @@ export function VehicleTabs({ vehicleId }: { vehicleId: number }) {
       <NavLink to={`/vehicles/${vehicleId}`} end className={tabClass}>Overview</NavLink>
       <NavLink to={`/vehicles/${vehicleId}/history`} className={tabClass}>History</NavLink>
     </div>
-  );
-}
-
-function Summary({ label, value, status }: { label: string; value: string; status?: string }) {
-  return (
-    <Card>
-      <div className="font-label text-xs font-bold uppercase tracking-wider text-muted">{label}</div>
-      <div className="mt-3 font-display text-2xl font-semibold text-primary-bright">{value}</div>
-      {status && <div className="mt-4"><Badge status={status}>{status}</Badge></div>}
-    </Card>
   );
 }

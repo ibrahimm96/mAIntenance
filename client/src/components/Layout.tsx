@@ -60,6 +60,16 @@ export function Card({ children, className = '' }: { children: React.ReactNode; 
   return <section className={`card p-6 ${className}`}>{children}</section>;
 }
 
+export function Tile({ label, value, status, wide = false }: { label: string; value: string; status?: string; wide?: boolean }) {
+  return (
+    <div className={`tile ${wide ? 'tile-lg' : ''}`}>
+      <div className="font-label text-[11px] font-bold uppercase tracking-[0.15em] text-muted">{label}</div>
+      <div className={`readout mt-3 font-bold text-primary-bright ${wide ? 'text-4xl' : 'text-3xl'}`}>{value}</div>
+      {status && <div className="mt-3"><Badge status={status}>{status}</Badge></div>}
+    </div>
+  );
+}
+
 export function Badge({ children, status = 'neutral' }: { children: React.ReactNode; status?: string }) {
   const color = status === 'Overdue' ? 'bg-orange-soft text-orange' : status === 'Due soon' ? 'bg-surface-blue text-primary' : status === 'Needs history' ? 'bg-surface-soft text-muted' : 'bg-emerald-50 text-emerald-700';
   return <span className={`rounded px-2 py-1 font-label text-xs font-bold uppercase tracking-wide ${color}`}>{children}</span>;

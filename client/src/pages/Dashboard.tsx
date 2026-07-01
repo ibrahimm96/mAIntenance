@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { api } from '../api/client';
-import { Badge, Card } from '../components/Layout';
+import { Badge, Card, Tile } from '../components/Layout';
 import { Forecast, Vehicle } from '../types';
 
 export function Dashboard() {
@@ -44,11 +44,11 @@ export function Dashboard() {
         </div>
         <Link to="/vehicles" className="rounded-xl bg-primary px-5 py-3 font-label font-semibold text-white">Manage Garage</Link>
       </div>
-      <div className="grid gap-6 md:grid-cols-4">
-        <Stat label="Next Service" value={next?.display_name || 'Needs history'} status={next?.status} />
-        <Stat label="Overdue" value={String(forecast?.overdue_count || 0)} status={(forecast?.overdue_count || 0) > 0 ? 'Overdue' : 'Completed'} />
-        <Stat label="Twelve-Month Estimate" value={`$${forecast?.twelve_month_min || 0} - $${forecast?.twelve_month_max || 0}`} />
-        <Stat label="Most Expensive Month" value={forecast?.most_expensive_month?.label || 'None'} />
+      <div className="grid gap-px overflow-hidden border border-line bg-line md:grid-cols-5">
+        <Tile wide label="Next Service" value={next?.display_name || 'Needs history'} status={next?.status} />
+        <Tile label="Overdue" value={String(forecast?.overdue_count || 0)} status={(forecast?.overdue_count || 0) > 0 ? 'Overdue' : 'Completed'} />
+        <Tile label="Twelve-Month Estimate" value={`$${forecast?.twelve_month_min || 0}-${forecast?.twelve_month_max || 0}`} />
+        <Tile label="Most Expensive Month" value={forecast?.most_expensive_month?.label || 'None'} />
       </div>
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <Card>
@@ -81,15 +81,5 @@ export function Dashboard() {
         </Card>
       </div>
     </div>
-  );
-}
-
-function Stat({ label, value, status }: { label: string; value: string; status?: string }) {
-  return (
-    <Card>
-      <div className="font-label text-xs font-bold uppercase tracking-wider text-muted">{label}</div>
-      <div className="mt-3 font-display text-2xl font-semibold text-primary-bright">{value}</div>
-      {status && <div className="mt-4"><Badge status={status}>{status}</Badge></div>}
-    </Card>
   );
 }
