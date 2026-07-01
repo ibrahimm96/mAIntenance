@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Hanken+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-background: #f9f9ff;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f0f3ff;
+  --color-surface-blue: #e7eeff;
+  --color-primary: #003ec7;
+  --color-primary-bright: #0052ff;
+  --color-primary-ink: #001452;
+  --color-orange: #cd4800;
+  --color-orange-soft: #ffdbce;
+  --color-ink: #111c2d;
+  --color-muted: #434656;
+  --color-line: #c3c5d9;
+  --color-line-soft: #e2e8f0;
+  --font-display: "Hanken Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Geist", sans-serif;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #f9f9ff;
+  color: #111c2d;
+  font-family: "Inter", sans-serif;
+}
+
+button, input, select, textarea { font: inherit; }
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+
+.field {
+  width: 100%;
+  border: 1px solid #c3c5d9;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  padding: 0.75rem 0.875rem;
+  outline: none;
+}
+
+.field:focus {
+  border-color: #003ec7;
+  box-shadow: 0 0 0 3px rgba(0, 62, 199, 0.16);
+}
