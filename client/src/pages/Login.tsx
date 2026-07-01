@@ -19,25 +19,39 @@ export function Login() {
     }
   }
 
-  return <AuthCard title="Welcome back" subtitle="Sign in to your maintenance dashboard" submit={submit} error={error} mode="login" />;
+  return <AuthCard title="LOGIN" subtitle="sign in to your maintenance dashboard" submit={submit} error={error} mode="login" />;
 }
 
 function AuthCard({ title, subtitle, submit, error, mode }: { title: string; subtitle: string; submit: (event: FormEvent<HTMLFormElement>) => void; error: string; mode: 'login' | 'register' }) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-background p-4">
-      <form onSubmit={submit} className="card w-full max-w-md p-8">
-        <div className="font-display text-3xl font-bold text-primary">mAIntenance</div>
-        <h1 className="mt-8 font-display text-2xl font-semibold">{title}</h1>
-        <p className="mt-1 text-muted">{subtitle}</p>
-        {mode === 'register' && <input name="name" className="field mt-6" placeholder="Name" required />}
-        <input name="email" className={`field ${mode === 'login' ? 'mt-6' : 'mt-4'}`} type="email" placeholder="Email" required />
-        <input name="password" className="field mt-4" type="password" placeholder="Password" required minLength={8} />
-        {error && <div className="mt-4 rounded-lg bg-orange-soft p-3 text-sm text-orange">{error}</div>}
-        <button className="mt-6 w-full rounded-xl bg-primary px-4 py-3 font-label font-semibold text-white">{mode === 'login' ? 'Log in' : 'Create account'}</button>
-        <p className="mt-5 text-center text-sm text-muted">
-          {mode === 'login' ? 'Need an account? ' : 'Have an account? '}
-          <Link className="font-semibold text-primary" to={mode === 'login' ? '/register' : '/login'}>{mode === 'login' ? 'Register' : 'Log in'}</Link>
-        </p>
+      <form onSubmit={submit} className="card w-full max-w-sm">
+        <div className="panel-head">
+          <span><span className="dot" />mAIntenance // {title}</span>
+        </div>
+        <div className="p-6">
+          <p className="mb-5 font-label text-xs text-muted">{subtitle}</p>
+          {mode === 'register' && (
+            <label className="mb-3 block">
+              <span className="mb-1 block font-label text-[0.65rem] font-bold uppercase tracking-widest text-muted">name</span>
+              <input name="name" className="field" required />
+            </label>
+          )}
+          <label className="mb-3 block">
+            <span className="mb-1 block font-label text-[0.65rem] font-bold uppercase tracking-widest text-muted">email</span>
+            <input name="email" className="field" type="email" required />
+          </label>
+          <label className="block">
+            <span className="mb-1 block font-label text-[0.65rem] font-bold uppercase tracking-widest text-muted">password</span>
+            <input name="password" className="field" type="password" required minLength={8} />
+          </label>
+          {error && <div className="mt-4 border border-orange bg-orange-soft p-2 text-sm text-orange">{error}</div>}
+          <button className="btn btn-solid mt-5 w-full">{mode === 'login' ? 'LOG_IN' : 'CREATE_ACCOUNT'}</button>
+          <p className="mt-4 text-center font-label text-xs text-muted">
+            {mode === 'login' ? 'need an account? ' : 'have an account? '}
+            <Link className="font-bold text-primary-bright" to={mode === 'login' ? '/register' : '/login'}>{mode === 'login' ? 'REGISTER' : 'LOG_IN'}</Link>
+          </p>
+        </div>
       </form>
     </main>
   );

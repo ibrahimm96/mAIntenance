@@ -20,5 +20,5 @@ export function Register() {
     }
   }
 
-  return <AuthCard title="Create your account" subtitle="Start forecasting vehicle maintenance" submit={submit} error={error} mode="register" />;
+  return <AuthCard title="REGISTER" subtitle="start forecasting vehicle maintenance" submit={submit} error={error} mode="register" />;
 }

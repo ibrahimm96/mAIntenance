@@ -1,53 +1,194 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Hanken+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-background: #f9f9ff;
-  --color-surface: #ffffff;
-  --color-surface-soft: #f0f3ff;
-  --color-surface-blue: #e7eeff;
-  --color-primary: #003ec7;
-  --color-primary-bright: #0052ff;
-  --color-primary-ink: #001452;
-  --color-orange: #cd4800;
-  --color-orange-soft: #ffdbce;
-  --color-ink: #111c2d;
-  --color-muted: #434656;
-  --color-line: #c3c5d9;
-  --color-line-soft: #e2e8f0;
-  --font-display: "Hanken Grotesk", sans-serif;
-  --font-body: "Inter", sans-serif;
-  --font-label: "Geist", sans-serif;
+  --color-background: #0d0f0d;
+  --color-surface: #141714;
+  --color-surface-soft: #1a1d19;
+  --color-surface-blue: #1f2a1c;
+  --color-primary: #e8e6de;
+  --color-primary-bright: #ff6a1f;
+  --color-primary-ink: #0b1210;
+  --color-orange: #ff6a1f;
+  --color-orange-soft: #2a1810;
+  --color-ink: #e8e6de;
+  --color-muted: #7d8177;
+  --color-line: #2a2d28;
+  --color-line-soft: #1f2220;
+  --font-display: "JetBrains Mono", monospace;
+  --font-body: "IBM Plex Sans", sans-serif;
+  --font-label: "JetBrains Mono", monospace;
 }
 
 * { box-sizing: border-box; }
+html { font-size: 15px; }
 body {
   margin: 0;
   min-width: 320px;
-  background: #f9f9ff;
-  color: #111c2d;
-  font-family: "Inter", sans-serif;
+  background:
+    linear-gradient(rgba(232, 230, 222, 0.035) 1px, transparent 1px) 0 0 / 100% 22px,
+    var(--color-background);
+  color: var(--color-ink);
+  font-family: "IBM Plex Sans", sans-serif;
+  line-height: 1.4;
 }
 
 button, input, select, textarea { font: inherit; }
+::selection { background: var(--color-primary-bright); color: #0d0f0d; }
 
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--color-background); }
+::-webkit-scrollbar-thumb { background: var(--color-line); border: 2px solid var(--color-background); }
+
+/* content panel: flat, sharp, hairline border, small tab-label cut into the top edge */
 .card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 0;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-surface-soft);
+  padding: 0.5rem 0.9rem;
+  font-family: var(--font-label);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.panel-head .dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--color-primary-bright);
+  margin-right: 0.5rem;
+  box-shadow: 0 0 0 2px var(--color-orange-soft);
+}
+
+/* dense readout strip: single-row ledger of stats, no card padding per item */
+.ledger {
+  display: grid;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+}
+
+.ledger-cell {
+  border-right: 1px solid var(--color-line);
+  padding: 0.7rem 1rem;
+}
+
+.ledger-cell:last-child { border-right: none; }
+
+.ledger-label {
+  font-family: var(--font-label);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.ledger-value {
+  margin-top: 0.3rem;
+  font-family: var(--font-label);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+  color: var(--color-primary-bright);
+}
+
+.readout {
+  font-family: var(--font-label);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* dense table language used across garage/history/upcoming lists */
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.data-table th {
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-surface-soft);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-family: var(--font-label);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.data-table td {
+  border-bottom: 1px solid var(--color-line-soft);
+  padding: 0.6rem 0.75rem;
+  vertical-align: top;
+}
+.data-table tr:hover td { background: var(--color-surface-soft); }
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 1px solid currentColor;
+  padding: 0.1rem 0.45rem;
+  font-family: var(--font-label);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .field {
   width: 100%;
-  border: 1px solid #c3c5d9;
-  border-radius: 0.5rem;
-  background: #ffffff;
-  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--color-line);
+  border-radius: 0;
+  background: var(--color-surface-soft);
+  color: var(--color-ink);
+  padding: 0.6rem 0.75rem;
   outline: none;
+  font-size: 0.88rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+.field::placeholder { color: var(--color-muted); }
+
 .field:focus {
-  border-color: #003ec7;
-  box-shadow: 0 0 0 3px rgba(0, 62, 199, 0.16);
+  border-color: var(--color-primary-bright);
+  box-shadow: 0 0 0 2px rgba(255, 106, 31, 0.2);
 }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 0;
+  font-family: var(--font-label);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.55rem 1rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.btn-solid {
+  background: var(--color-primary-bright);
+  color: #0d0f0d;
+}
+
+.btn-outline {
+  background: transparent;
+  border-color: var(--color-line);
+  color: var(--color-ink);
+}
+
+.btn-outline:hover { border-color: var(--color-primary-bright); color: var(--color-primary-bright); }

@@ -4,42 +4,45 @@ import { BarChart3, Car, ShieldCheck, Wrench } from 'lucide-react';
 export function Landing() {
   return (
     <main className="min-h-screen bg-background">
-      <header className="mx-auto flex max-w-[1280px] items-center justify-between px-4 py-6 md:px-12">
-        <div className="font-display text-2xl font-bold text-primary">mAIntenance</div>
-        <div className="flex gap-3">
-          <Link className="rounded-xl border border-line px-4 py-2 font-label text-sm text-primary" to="/login">Log in</Link>
-          <Link className="rounded-xl bg-primary px-4 py-2 font-label text-sm text-white" to="/register">Register</Link>
+      <header className="flex h-12 items-center gap-4 border-b border-line bg-surface px-3 md:px-6">
+        <div className="flex items-center gap-2">
+          <span className="inline-block h-2 w-2 bg-primary-bright" />
+          <span className="font-label text-sm font-bold text-ink">mAIntenance</span>
+        </div>
+        <div className="ml-auto flex gap-2">
+          <Link className="btn btn-outline" to="/login">LOG_IN</Link>
+          <Link className="btn btn-solid" to="/register">REGISTER</Link>
         </div>
       </header>
-      <section className="mx-auto grid max-w-[1280px] gap-8 px-4 py-10 md:grid-cols-[1fr_1.1fr] md:px-12">
-        <div className="flex flex-col justify-center">
-          <h1 className="font-display text-5xl font-bold leading-tight text-ink">mAIntenance</h1>
-          <p className="mt-4 font-display text-3xl font-semibold text-primary">See what&apos;s due before it becomes overdue.</p>
-          <p className="mt-5 max-w-xl text-lg text-muted">Track vehicles, maintenance history, upcoming service, cost exposure, and AI-powered vehicle-specific recommendations in one focused dashboard.</p>
-          <div className="mt-8 flex gap-3">
-            <Link className="rounded-xl bg-primary px-5 py-3 font-label font-semibold text-white" to="/register">Start tracking</Link>
-            <Link className="rounded-xl border border-line px-5 py-3 font-label font-semibold text-primary" to="/login">Log in</Link>
+
+      <section className="mx-auto grid max-w-[1280px] gap-6 p-3 md:grid-cols-[1fr_1.1fr] md:p-6">
+        <div className="flex flex-col justify-center border border-line bg-surface p-6">
+          <div className="font-label text-xs tracking-widest text-muted">// VEHICLE_MAINTENANCE_OS</div>
+          <h1 className="mt-2 font-label text-4xl font-bold leading-tight text-ink">mAIntenance</h1>
+          <p className="mt-3 font-label text-xl font-semibold text-primary-bright">See what&apos;s due before it becomes overdue.</p>
+          <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">Track vehicles, maintenance history, upcoming service, cost exposure, and AI-powered vehicle-specific recommendations in one focused dashboard.</p>
+          <div className="mt-6 flex gap-2">
+            <Link className="btn btn-solid" to="/register">START_TRACKING</Link>
+            <Link className="btn btn-outline" to="/login">LOG_IN</Link>
           </div>
         </div>
-        <div className="card p-6">
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <div className="font-label text-xs uppercase tracking-wider text-muted">Example dashboard</div>
-              <div className="font-display text-2xl font-semibold">2014 BMW 328i</div>
-            </div>
-            <Car className="text-primary" />
+
+        <div className="card">
+          <div className="panel-head">
+            <span><span className="dot" />EXAMPLE_DASHBOARD // 2014 BMW 328i</span>
+            <Car size={14} className="text-muted" />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-2">
             {[
-              ['Next Service', 'Oil change', Wrench],
-              ['12-Month Estimate', '$1,125 - $2,540', BarChart3],
-              ['AI Recommendation', 'Timing chain inspection', ShieldCheck],
-              ['Most Expensive Month', 'Oct 2026', BarChart3],
-            ].map(([label, value, Icon]) => (
-              <div key={label as string} className="rounded-lg border border-line-soft bg-surface-soft p-4">
-                <Icon className="mb-4 text-primary" />
-                <div className="font-label text-xs uppercase tracking-wider text-muted">{label as string}</div>
-                <div className="mt-1 font-display text-xl font-semibold">{value as string}</div>
+              ['NEXT_SERVICE', 'Oil change', Wrench],
+              ['12MO_ESTIMATE', '$1,125-2,540', BarChart3],
+              ['AI_RECOMMENDATION', 'Timing chain inspection', ShieldCheck],
+              ['PEAK_MONTH', 'Oct 2026', BarChart3],
+            ].map(([label, value, Icon], index) => (
+              <div key={label as string} className={`border-line p-4 ${index % 2 === 0 ? 'border-r' : ''} ${index < 2 ? 'border-b' : ''}`}>
+                <Icon size={16} className="mb-3 text-primary-bright" />
+                <div className="font-label text-[0.65rem] uppercase tracking-widest text-muted">{label as string}</div>
+                <div className="readout mt-1 text-lg font-bold text-ink">{value as string}</div>
               </div>
             ))}
           </div>

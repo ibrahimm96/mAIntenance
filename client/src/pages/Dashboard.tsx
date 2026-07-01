@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { api } from '../api/client';
-import { Badge, Card } from '../components/Layout';
+import { Badge, Card, Ledger, LedgerCell } from '../components/Layout';
 import { Forecast, Vehicle } from '../types';
 
 export function Dashboard() {
@@ -22,74 +22,71 @@ export function Dashboard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  if (error) return <Card><p className="text-orange">{error}</p></Card>;
+  if (error) return <Card title="ERROR"><p className="text-orange">{error}</p></Card>;
 
   if (!vehicles.length) {
     return (
-      <Card className="text-center">
-        <h1 className="font-display text-3xl font-semibold">No vehicles yet</h1>
-        <p className="mt-2 text-muted">Add a vehicle to start forecasting maintenance.</p>
-        <Link to="/vehicles" className="mt-6 inline-block rounded-xl bg-primary px-5 py-3 font-label font-semibold text-white">Add Vehicle</Link>
+      <Card title="FLEET_OVERVIEW" className="text-center">
+        <h1 className="font-display text-xl font-bold">NO_VEHICLES_FOUND</h1>
+        <p className="mt-2 text-sm text-muted">Add a vehicle to start forecasting maintenance.</p>
+        <Link to="/vehicles" className="btn btn-solid mt-6 inline-flex">+ ADD VEHICLE</Link>
       </Card>
     );
   }
 
   const next = forecast?.next_service;
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+    <div className="space-y-4">
+      <div className="flex flex-col justify-between gap-3 border-b border-line pb-3 md:flex-row md:items-end">
         <div>
-          <h1 className="font-display text-4xl font-semibold">Fleet Overview</h1>
-          <p className="text-muted">Real-time status of your vehicle maintenance plan.</p>
+          <h1 className="font-label text-lg font-bold tracking-tight text-ink">FLEET_OVERVIEW</h1>
+          <p className="font-label text-xs text-muted">real-time status // vehicle maintenance plan</p>
         </div>
-        <Link to="/vehicles" className="rounded-xl bg-primary px-5 py-3 font-label font-semibold text-white">Manage Garage</Link>
+        <Link to="/vehicles" className="btn btn-solid">MANAGE GARAGE</Link>
       </div>
-      <div className="grid gap-6 md:grid-cols-4">
-        <Stat label="Next Service" value={next?.display_name || 'Needs history'} status={next?.status} />
-        <Stat label="Overdue" value={String(forecast?.overdue_count || 0)} status={(forecast?.overdue_count || 0) > 0 ? 'Overdue' : 'Completed'} />
-        <Stat label="Twelve-Month Estimate" value={`$${forecast?.twelve_month_min || 0} - $${forecast?.twelve_month_max || 0}`} />
-        <Stat label="Most Expensive Month" value={forecast?.most_expensive_month?.label || 'None'} />
-      </div>
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <Card>
-          <h2 className="font-display text-2xl font-semibold">12-Month Cost Timeline</h2>
-          <div className="mt-6 h-80">
+
+      <Ledger>
+        <LedgerCell label="NEXT_SERVICE" value={next?.display_name || 'Needs history'} status={next?.status} />
+        <LedgerCell label="OVERDUE" value={String(forecast?.overdue_count || 0)} status={(forecast?.overdue_count || 0) > 0 ? 'Overdue' : 'Completed'} />
+        <LedgerCell label="12MO_EST" value={`$${forecast?.twelve_month_min || 0}-${forecast?.twelve_month_max || 0}`} />
+        <LedgerCell label="PEAK_MONTH" value={forecast?.most_expensive_month?.label || 'None'} />
+      </Ledger>
+
+      <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+        <Card title="COST_TIMELINE // 12MO">
+          <div className="h-72">
             <ResponsiveContainer>
               <BarChart data={forecast?.timeline || []}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="label" tick={{ fontSize: 12 }} />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="max_cost" fill="#003ec7" radius={[6, 6, 0, 0]} />
+                <CartesianGrid strokeDasharray="2 4" stroke="#2a2d28" />
+                <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#7d8177' }} axisLine={{ stroke: '#2a2d28' }} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: '#7d8177' }} axisLine={{ stroke: '#2a2d28' }} tickLine={false} />
+                <Tooltip contentStyle={{ background: '#141714', border: '1px solid #2a2d28', borderRadius: 0, fontSize: 12 }} />
+                <Bar dataKey="max_cost" fill="#ff6a1f" radius={0} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </Card>
-        <Card>
-          <h2 className="font-display text-2xl font-semibold">Garage</h2>
-          <div className="mt-4 divide-y divide-line-soft">
-            {vehicles.map((vehicle) => (
-              <Link key={vehicle.id} to={`/vehicles/${vehicle.id}`} className="flex items-center justify-between py-4">
-                <div>
-                  <div className="font-semibold">{vehicle.nickname || `${vehicle.year} ${vehicle.make} ${vehicle.model}`}</div>
-                  <div className="font-label text-sm text-muted">{vehicle.current_mileage.toLocaleString()} mi</div>
-                </div>
-                <Badge>Open</Badge>
-              </Link>
-            ))}
-          </div>
+        <Card title="GARAGE_INDEX">
+          <table className="data-table">
+            <thead>
+              <tr><th>Vehicle</th><th>Mileage</th><th /></tr>
+            </thead>
+            <tbody>
+              {vehicles.map((vehicle) => (
+                <tr key={vehicle.id}>
+                  <td>
+                    <Link to={`/vehicles/${vehicle.id}`} className="font-semibold text-ink hover:text-primary-bright">
+                      {vehicle.nickname || `${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+                    </Link>
+                  </td>
+                  <td className="readout text-muted">{vehicle.current_mileage.toLocaleString()} mi</td>
+                  <td className="text-right"><Badge>OPEN</Badge></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </Card>
       </div>
     </div>
-  );
-}
-
-function Stat({ label, value, status }: { label: string; value: string; status?: string }) {
-  return (
-    <Card>
-      <div className="font-label text-xs font-bold uppercase tracking-wider text-muted">{label}</div>
-      <div className="mt-3 font-display text-2xl font-semibold text-primary">{value}</div>
-      {status && <div className="mt-4"><Badge status={status}>{status}</Badge></div>}
-    </Card>
   );
 }
