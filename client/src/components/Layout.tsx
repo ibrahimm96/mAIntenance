@@ -1,4 +1,4 @@
-import { Car, Gauge, LogOut, Plus, Search } from 'lucide-react';
+import { Car, Gauge, LogOut, Plus } from 'lucide-react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
 
@@ -37,10 +37,6 @@ export function AppShell() {
             );
           })}
         </nav>
-        <div className="relative hidden max-w-sm flex-1 md:block">
-          <Search className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-muted" size={14} />
-          <input className="field h-8 border-line bg-surface-soft py-0 pl-7 text-xs" placeholder="search vehicles or services..." />
-        </div>
         <div className="ml-auto flex items-center gap-2">
           <button onClick={() => navigate('/vehicles')} className="btn btn-outline hidden h-8 py-0 md:inline-flex">
             <Plus size={14} /> VEHICLE
